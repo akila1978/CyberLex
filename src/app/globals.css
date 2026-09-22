@@ -1,0 +1,385 @@
+@import "tailwindcss";
+
+/* ============================================================
+   CyberLex Design System — Tailwind v4 Theme Configuration
+   ============================================================ */
+
+@theme inline {
+  /* --- Color Palette --- */
+  --color-dark-900: #07111F;
+  --color-dark-800: #0B1728;
+  --color-dark-700: #101E32;
+  --color-dark-600: #162942;
+  --color-dark-500: #1E3654;
+  --color-dark-400: #2A4468;
+
+  --color-accent-blue: #27B7FF;
+  --color-accent-purple: #675CFF;
+  --color-trust-blue: #3287FF;
+  --color-accent-cyan: #00D4AA;
+  --color-accent-amber: #FFB627;
+
+  --color-text-primary: #F4F7FB;
+  --color-text-secondary: #C8D6E5;
+  --color-text-muted: #98A8BC;
+  --color-text-dim: #6B7F99;
+
+  /* Light mode colors */
+  --color-light-50: #FFFFFF;
+  --color-light-100: #F8FAFC;
+  --color-light-200: #EFF3F8;
+  --color-light-300: #E2E8F0;
+  --color-light-400: #CBD5E1;
+  --color-light-500: #94A3B8;
+
+  --color-light-text-primary: #0F172A;
+  --color-light-text-secondary: #334155;
+  --color-light-text-muted: #64748B;
+
+  /* Status colors */
+  --color-status-success: #10B981;
+  --color-status-warning: #F59E0B;
+  --color-status-error: #EF4444;
+  --color-status-info: #3B82F6;
+
+  /* --- Typography --- */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-heading: "Manrope", var(--font-sans);
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+
+  /* --- Spacing --- */
+  --spacing-article: clamp(1rem, 5vw, 3rem);
+
+  /* --- Border Radius --- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* --- Shadows --- */
+  --shadow-glow-blue: 0 0 20px rgba(39, 183, 255, 0.15);
+  --shadow-glow-purple: 0 0 20px rgba(103, 92, 255, 0.15);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 25px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 20px 40px rgba(0, 0, 0, 0.15);
+
+  /* --- Animations --- */
+  --animate-fade-in: fade-in 0.5s ease-out;
+  --animate-slide-up: slide-up 0.5s ease-out;
+  --animate-slide-down: slide-down 0.3s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+}
+
+/* ============================================================
+   Keyframe Animations
+   ============================================================ */
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slide-down {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 10px rgba(39, 183, 255, 0.2); }
+  50%      { box-shadow: 0 0 25px rgba(39, 183, 255, 0.4); }
+}
+
+/* ============================================================
+   CSS Custom Properties (used for theme switching)
+   ============================================================ */
+
+:root {
+  /* Default: Dark Mode */
+  --bg-primary: #07111F;
+  --bg-secondary: #0B1728;
+  --bg-surface: #101E32;
+  --bg-surface-hover: #162942;
+  --bg-elevated: #1E3654;
+
+  --text-primary: #F4F7FB;
+  --text-secondary: #C8D6E5;
+  --text-muted: #98A8BC;
+  --text-dim: #6B7F99;
+
+  --border-color: rgba(148, 163, 184, 0.12);
+  --border-color-hover: rgba(148, 163, 184, 0.25);
+
+  --accent-primary: #27B7FF;
+  --accent-secondary: #675CFF;
+  --accent-trust: #3287FF;
+
+  --nav-bg: rgba(7, 17, 31, 0.85);
+  --nav-border: rgba(148, 163, 184, 0.08);
+
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-surface: #EFF3F8;
+  --bg-surface-hover: #E2E8F0;
+  --bg-elevated: #FFFFFF;
+
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --text-dim: #94A3B8;
+
+  --border-color: rgba(15, 23, 42, 0.08);
+  --border-color-hover: rgba(15, 23, 42, 0.15);
+
+  --accent-primary: #0E8FD1;
+  --accent-secondary: #5046E5;
+  --accent-trust: #2563EB;
+
+  --nav-bg: rgba(255, 255, 255, 0.88);
+  --nav-border: rgba(15, 23, 42, 0.06);
+
+  color-scheme: light;
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Skip Navigation */
+.skip-nav {
+  position: absolute;
+  top: -100%;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.75rem 1.5rem;
+  background: var(--accent-primary);
+  color: #07111F;
+  font-weight: 600;
+  border-radius: 0 0 0.5rem 0.5rem;
+  z-index: 9999;
+  transition: top 0.2s;
+}
+.skip-nav:focus {
+  top: 0;
+}
+
+/* Focus Visible */
+*:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Article / Reading Typography
+   ============================================================ */
+
+.article-body {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+  max-width: 72ch;
+}
+
+.article-body h2 {
+  font-family: var(--font-heading);
+  font-size: 1.625rem;
+  font-weight: 700;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+
+.article-body h3 {
+  font-family: var(--font-heading);
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.article-body h4 {
+  font-family: var(--font-heading);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.article-body p {
+  margin-bottom: 1.25rem;
+  color: var(--text-secondary);
+}
+
+.article-body ul, .article-body ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+}
+
+.article-body li {
+  margin-bottom: 0.5rem;
+}
+
+.article-body a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.2s;
+}
+
+.article-body a:hover {
+  color: var(--accent-secondary);
+}
+
+.article-body blockquote {
+  border-left: 3px solid var(--accent-primary);
+  padding-left: 1.25rem;
+  margin: 1.5rem 0;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.article-body th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  background: var(--bg-surface);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.article-body td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.article-body code {
+  background: var(--bg-surface);
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+/* ============================================================
+   Legal Quote Component
+   ============================================================ */
+
+.legal-quote {
+  background: var(--bg-surface);
+  border-left: 4px solid var(--accent-trust);
+  border-radius: 0 0.5rem 0.5rem 0;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  position: relative;
+}
+
+.legal-quote::before {
+  content: "§";
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  font-size: 1.5rem;
+  color: var(--text-dim);
+  opacity: 0.5;
+}
+
+.legal-quote .quote-source {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   Definition Box
+   ============================================================ */
+
+.definition-box {
+  background: linear-gradient(135deg, rgba(39, 183, 255, 0.05), rgba(103, 92, 255, 0.05));
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
+}
+
+.definition-box .definition-term {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: var(--accent-primary);
+}
+
+/* ============================================================
+   Scrollbar (dark theme)
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--text-dim);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* ============================================================
+   Reduced Motion
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

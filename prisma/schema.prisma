@@ -1,0 +1,364 @@
+// CyberLex — Global Cyber Law & Online Safety Platform
+// Prisma Schema for PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// Authentication & User Management
+// ==========================================
+
+enum UserRole {
+  ADMIN
+  EDITOR
+  CONTRIBUTOR
+  READER
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          UserRole  @default(READER)
+  bio           String?
+  organization  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts      Account[]
+  sessions      Session[]
+  articles      Article[] @relation("ArticleAuthor")
+  edits         Article[] @relation("ArticleEditor")
+  corrections   Correction[]
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ==========================================
+// Topics & Taxonomies
+// ==========================================
+
+model Topic {
+  id           String    @id @default(cuid())
+  name         String    @unique
+  slug         String    @unique
+  description  String    @db.Text
+  icon         String    // Lucide icon identifier
+  displayOrder Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  articles     Article[]
+  quizzes      QuizQuestion[]
+}
+
+// ==========================================
+// Jurisdictions & Countries
+// ==========================================
+
+model Country {
+  id                 String    @id @default(cuid())
+  name               String    @unique
+  code               String    @unique // ISO 2-letter e.g. "LK", "US", "EU"
+  slug               String    @unique
+  region             String    // Asia, Europe, North America, etc.
+  flagEmoji          String
+  legalSystem        String    // e.g. "Roman-Dutch / English Common Law", "Civil Law"
+  summary            String    @db.Text
+  dpaAuthority       String?   // Data Protection Authority name
+  dpaUrl             String?
+  certAuthority      String?   // National CERT name
+  certUrl            String?
+  cyberStrategyUrl   String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  statutes           Statute[]
+  articles           Article[]
+}
+
+// ==========================================
+// Primary Legal Instruments & Statutes
+// ==========================================
+
+enum InstrumentType {
+  LAW
+  REGULATION
+  DIRECTIVE
+  TREATY
+  BILL
+  PROPOSED_LAW
+  GUIDANCE
+  STANDARD
+  FRAMEWORK
+  CASE_LAW
+  POLICY
+}
+
+enum InstrumentStatus {
+  CURRENT
+  AMENDED
+  REPEALED
+  PROPOSED
+  AWAITING_COMMENCEMENT
+  UNDER_REVIEW
+  ARCHIVED
+  DRAFT
+}
+
+model Statute {
+  id                String           @id @default(cuid())
+  title             String
+  officialTitle     String?          @db.Text
+  slug              String           @unique
+  countryId         String
+  country           Country          @relation(fields: [countryId], references: [id])
+  instrumentType    InstrumentType   @default(LAW)
+  yearEnacted       Int?
+  effectiveDate     DateTime?
+  status            InstrumentStatus @default(CURRENT)
+  officialGazetteRef String?
+  officialUrl       String?
+  summary           String           @db.Text
+  keyProvisions     Json?            // Array of structured key provisions & sections
+  enforcementBody   String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  citations         Citation[]
+  glossaryTerms     GlossaryTerm[]
+
+  @@index([countryId])
+  @@index([instrumentType])
+}
+
+// ==========================================
+// Articles & Knowledge Base Content
+// ==========================================
+
+enum ArticleStatus {
+  DRAFT
+  AWAITING_SOURCE_VERIFICATION
+  UNDER_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SourceQuality {
+  PRIMARY
+  OFFICIAL_REGULATOR
+  INTERNATIONAL_ORG
+  ACADEMIC
+  SECONDARY
+}
+
+enum AudienceLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Article {
+  id            String         @id @default(cuid())
+  title         String
+  slug          String         @unique
+  subtitle      String?
+  summary       String         @db.Text
+  content       String         @db.Text
+  topicId       String
+  topic         Topic          @relation(fields: [topicId], references: [id])
+  countryId     String?
+  country       Country?       @relation(fields: [countryId], references: [id])
+  targetAudience String?       // Students, Cybersecurity Pros, Legal Counsel, etc.
+  difficulty    AudienceLevel  @default(BEGINNER)
+  status        ArticleStatus  @default(DRAFT)
+  sourceQuality SourceQuality  @default(PRIMARY)
+  authorId      String
+  author        User           @relation("ArticleAuthor", fields: [authorId], references: [id])
+  lastEditorId  String?
+  lastEditor    User?          @relation("ArticleEditor", fields: [lastEditorId], references: [id])
+  publishedAt   DateTime?
+  readingTimeMinutes Int       @default(5)
+  viewCount     Int            @default(0)
+  isFeatured    Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  citations     Citation[]
+  corrections   Correction[]
+
+  @@index([topicId])
+  @@index([countryId])
+  @@index([status])
+}
+
+// ==========================================
+// Citations & Source Verification
+// ==========================================
+
+model Citation {
+  id           String    @id @default(cuid())
+  articleId    String
+  article      Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  statuteId    String?
+  statute      Statute?  @relation(fields: [statuteId], references: [id])
+  title        String
+  sourceUrl    String?
+  sourceType   SourceQuality @default(PRIMARY)
+  citationText String?   @db.Text
+  isVerified   Boolean   @default(false)
+  verifiedAt   DateTime?
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now())
+
+  @@index([articleId])
+}
+
+// ==========================================
+// Judicial Precedents & Case Studies
+// ==========================
+
+model CaseStudy {
+  id           String    @id @default(cuid())
+  title        String
+  slug         String    @unique
+  court        String
+  decisionYear Int
+  citation     String
+  jurisdiction String
+  facts        String    @db.Text
+  legalIssue   String    @db.Text
+  ruling       String    @db.Text
+  impact       String    @db.Text
+  status       String    @default("Precedent")
+  isVerified   Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+// ==========================================
+// Legal Updates & Regulatory Tracker
+// ==========================================
+
+model LegalUpdate {
+  id             String         @id @default(cuid())
+  title          String
+  slug           String         @unique
+  datePublished  DateTime
+  jurisdiction   String
+  instrumentType InstrumentType @default(LAW)
+  summary        String         @db.Text
+  fullAnalysis   String?        @db.Text
+  sourceUrl      String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+// ==========================================
+// Interactive Quiz System
+// ==========================================
+
+model QuizQuestion {
+  id               String        @id @default(cuid())
+  question         String        @db.Text
+  topicId          String
+  topic            Topic         @relation(fields: [topicId], references: [id])
+  difficulty       AudienceLevel @default(BEGINNER)
+  options          Json          // Array of strings
+  correctIndex     Int
+  explanation      String        @db.Text
+  statutoryContext String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  @@index([topicId])
+}
+
+// ==========================================
+// Legal Glossary & Terms
+// ==========================================
+
+model GlossaryTerm {
+  id               String    @id @default(cuid())
+  term             String    @unique
+  slug             String    @unique
+  category         String
+  definition       String    @db.Text
+  statutoryContext String?
+  relatedStatuteId String?
+  relatedStatute   Statute?  @relation(fields: [relatedStatuteId], references: [id])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// ==========================================
+// Editorial Corrections & Quality Assurance
+// ==========================================
+
+enum CorrectionStatus {
+  PENDING
+  INVESTIGATING
+  APPLIED
+  REJECTED
+}
+
+model Correction {
+  id                  String           @id @default(cuid())
+  articleId           String?
+  article             Article?         @relation(fields: [articleId], references: [id])
+  submitterId         String?
+  submitter           User?            @relation(fields: [submitterId], references: [id])
+  submitterName       String
+  submitterEmail      String
+  issueType           String           // e.g. "Outdated Citation", "Factual Error", "Broken Link"
+  description         String           @db.Text
+  suggestedCorrection String?          @db.Text
+  status              CorrectionStatus @default(PENDING)
+  editorialNotes      String?          @db.Text
+  createdAt           DateTime         @default(now())
+  resolvedAt          DateTime?
+
+  @@index([status])
+}
